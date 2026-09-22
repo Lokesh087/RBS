@@ -45,3 +45,33 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 );
 
+CREATE TABLE IF NOT EXISTS bills (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL UNIQUE,
+    subtotal REAL NOT NULL,
+    gst_rate REAL DEFAULT 5.0,
+    gst_amount REAL NOT NULL,
+    total REAL NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+
+CREATE TABLE IF NOT EXISTS bug_tracker (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id TEXT NOT NULL UNIQUE,
+    module TEXT NOT NULL,
+    description TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    status TEXT DEFAULT 'Open',
+    reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    resolved_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS error_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    level TEXT NOT NULL,
+    module TEXT NOT NULL,
+    message TEXT NOT NULL,
+    details TEXT
+);

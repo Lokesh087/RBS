@@ -41,3 +41,48 @@ def get_all_menu_items(available_only: bool = False) -> list[dict]:
         return []
 
 
+def update_menu_item(item_id: int, name: str, category: str, price, available: int = 1) -> tuple[bool, str]:
+    """Update an existing menu item."""
+    try:
+        data = validate_menu_item(name, category, price)
+    except ValidationError as ve:
+        return False, str(ve)
+    try:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE menu_items SET name=?, category=?, price=?, available=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+            (data["name"], data["category"], data["price"], available, item_id),
+        )
+        conn.commit()
+        conn.close()
+        log_info("Menu", f"Updated item id={item_id}")
+        return True, "✅ Item updated successfully."
+    except Exception as e:
+        log_error("Menu", "Failed to update menu item", str(e))
+        return False, "⚠️ Unable to update item."
+
+
+def delete_menu_item(item_id: int) -> tuple[bool, str]:
+    """Delete a menu item by ID."""
+    try:
+        conn = get_connection()
+        conn.execute("DELETE FROM menu_items WHERE id=?", (item_id,))
+        conn.commit()
+        conn.close()
+        log_info("Menu", f"Deleted item id={item_id}")
+        return True, "✅ Item deleted."
+    except Exception as e:
+        log_error("Menu", "Failed to delete menu item", str(e))
+        return False, "⚠️ Unable to delete item."
+
+
+def get_categories() -> list[str]:
+    """Return distinct categories for dropdowns."""
+    try:
+        conn = get_connection()
+        rows = conn.execute("SELECT DISTINCT category FROM menu_items ORDER BY category").fetchall()
+        conn.close()
+        return [r["category"] for r in rows]
+    except Exception as e:
+        log_error("Menu", "Failed to fetch categories", str(e))
+        return []

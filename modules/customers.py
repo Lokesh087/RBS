@@ -35,3 +35,34 @@ def get_all_customers() -> list[dict]:
         return []
 
 
+def update_customer(cust_id: int, name: str, phone: str, email: str) -> tuple[bool, str]:
+    try:
+        data = validate_customer(name, phone, email)
+    except ValidationError as ve:
+        return False, str(ve)
+    try:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE customers SET name=?, phone=?, email=? WHERE id=?",
+            (data["name"], data["phone"], data["email"], cust_id),
+        )
+        conn.commit()
+        conn.close()
+        log_info("Customer", f"Updated customer id={cust_id}")
+        return True, "✅ Customer updated."
+    except Exception as e:
+        log_error("Customer", "Failed to update customer", str(e))
+        return False, "⚠️ Unable to update customer."
+
+
+def delete_customer(cust_id: int) -> tuple[bool, str]:
+    try:
+        conn = get_connection()
+        conn.execute("DELETE FROM customers WHERE id=?", (cust_id,))
+        conn.commit()
+        conn.close()
+        log_info("Customer", f"Deleted customer id={cust_id}")
+        return True, "✅ Customer deleted."
+    except Exception as e:
+        log_error("Customer", "Failed to delete customer", str(e))
+        return False, "⚠️ Unable to delete customer."

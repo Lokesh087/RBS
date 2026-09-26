@@ -65,3 +65,67 @@ def remove_order_item(order_item_id: int) -> tuple[bool, str]:
         return False, "⚠️ Unable to remove item."
 
 
+def get_order_items(order_id: int) -> list[dict]:
+    """Return all items for an order with menu item details."""
+    try:
+        conn = get_connection()
+        rows = conn.execute(
+            """SELECT oi.id, oi.menu_item_id, m.name, oi.quantity, oi.unit_price,
+                      (oi.quantity * oi.unit_price) AS line_total
+               FROM order_items oi
+               JOIN menu_items m ON m.id = oi.menu_item_id
+               WHERE oi.order_id = ?""",
+            (order_id,),
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        log_error("Order", "Failed to fetch order items", str(e))
+        return []
+
+
+def get_all_orders() -> list[dict]:
+    """Return all orders with customer name and bill total."""
+    try:
+        conn = get_connection()
+        rows = conn.execute(
+            """SELECT o.id, o.status, o.created_at,
+                      COALESCE(c.name, 'Walk-in') AS customer_name,
+                      COALESCE(b.total, 0) AS total
+               FROM orders o
+               LEFT JOIN customers c ON c.id = o.customer_id
+               LEFT JOIN bills b ON b.order_id = o.id
+               ORDER BY o.created_at DESC"""
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        log_error("Order", "Failed to fetch orders", str(e))
+        return []
+
+
+def close_order(order_id: int) -> tuple[bool, str]:
+    """Mark order as 'closed' after billing."""
+    try:
+        conn = get_connection()
+        conn.execute("UPDATE orders SET status='closed' WHERE id=?", (order_id,))
+        conn.commit()
+        conn.close()
+        return True, "Order closed."
+    except Exception as e:
+        log_error("Order", "Failed to close order", str(e))
+        return False, "⚠️ Unable to close order."
+
+
+def delete_order(order_id: int) -> tuple[bool, str]:
+    """Delete an open order and its items."""
+    try:
+        conn = get_connection()
+        conn.execute("DELETE FROM order_items WHERE order_id=?", (order_id,))
+        conn.execute("DELETE FROM orders WHERE id=?", (order_id,))
+        conn.commit()
+        conn.close()
+        return True, "✅ Order deleted."
+    except Exception as e:
+        log_error("Order", "Failed to delete order", str(e))
+        return False, "⚠️ Unable to delete order."

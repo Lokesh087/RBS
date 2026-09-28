@@ -67,3 +67,21 @@ def validate_email(email: str) -> str:
 
 # ─── Domain-level validators ─────────────────────────────────────────────────
 
+def validate_menu_item(name: str, category: str, price) -> dict:
+    """Validate menu item fields and return cleaned dict."""
+    return {
+        "name":     require_non_empty(name, "Item Name"),
+        "category": require_non_empty(category, "Category"),
+        "price":    require_positive_float(price, "Price"),
+    }
+
+
+def validate_customer(name: str, phone: str, email: str) -> dict:
+    """Validate customer fields and return cleaned dict."""
+    return {
+        "name":  require_non_empty(name, "Customer Name"),
+        "phone": validate_phone(phone),
+        "email": validate_email(email),
+    }
+
+

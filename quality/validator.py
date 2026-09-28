@@ -85,3 +85,17 @@ def validate_customer(name: str, phone: str, email: str) -> dict:
     }
 
 
+def validate_order_item(menu_item_id, quantity) -> dict:
+    """Validate an order line — item must be selected and quantity positive."""
+    if not menu_item_id:
+        raise ValidationError("❌ Please select a menu item.")
+    qty = require_positive_int(quantity, "Quantity")
+    return {"menu_item_id": menu_item_id, "quantity": qty}
+
+
+def validate_login(username: str, password: str) -> dict:
+    """Validate login credentials (non-empty check only)."""
+    return {
+        "username": require_non_empty(username, "Username"),
+        "password": require_non_empty(password, "Password"),
+    }

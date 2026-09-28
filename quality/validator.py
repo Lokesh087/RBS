@@ -41,3 +41,29 @@ def require_positive_int(value, field_name: str) -> int:
     return num
 
 
+def validate_phone(phone: str) -> str:
+    """Validate an Indian-style 10-digit phone number (optional field)."""
+    phone = phone.strip()
+    if phone == "":
+        return phone  # Optional field
+    pattern = r"^[6-9]\d{9}$"
+    if not re.fullmatch(pattern, phone):
+        raise ValidationError(
+            "❌ Enter a valid 10-digit phone number starting with 6–9."
+        )
+    return phone
+
+
+def validate_email(email: str) -> str:
+    """Validate email format (optional field)."""
+    email = email.strip()
+    if email == "":
+        return email  # Optional field
+    pattern = r"^[\w\.-]+@[\w\.-]+\.\w{2,}$"
+    if not re.fullmatch(pattern, email):
+        raise ValidationError("❌ Enter a valid email address.")
+    return email
+
+
+# ─── Domain-level validators ─────────────────────────────────────────────────
+

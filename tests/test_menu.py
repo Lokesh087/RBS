@@ -56,3 +56,40 @@ class TestGetMenuItems:
         assert "category" in item
 
 
+class TestUpdateMenuItem:
+    def test_update_valid(self):
+        items = get_all_menu_items()
+        item_id = items[0]["id"]
+        ok, msg = update_menu_item(item_id, "New Name", "Starter", 200)
+        assert ok
+
+    def test_update_negative_price_fails(self):
+        items = get_all_menu_items()
+        item_id = items[0]["id"]
+        ok, msg = update_menu_item(item_id, "Name", "Starter", -1)
+        assert not ok
+
+    def test_update_empty_name_fails(self):
+        items = get_all_menu_items()
+        item_id = items[0]["id"]
+        ok, msg = update_menu_item(item_id, "", "Starter", 100)
+        assert not ok
+
+
+class TestDeleteMenuItem:
+    def test_delete_existing(self):
+        add_menu_item("TempItem", "Test", 10)
+        items = get_all_menu_items()
+        temp = next(i for i in items if i["name"] == "TempItem")
+        ok, msg = delete_menu_item(temp["id"])
+        assert ok
+        assert "✅" in msg
+
+    def test_item_gone_after_delete(self):
+        add_menu_item("DeleteMe", "Test", 10)
+        items = get_all_menu_items()
+        temp = next(i for i in items if i["name"] == "DeleteMe")
+        delete_menu_item(temp["id"])
+        remaining = get_all_menu_items()
+        ids = [i["id"] for i in remaining]
+        assert temp["id"] not in ids

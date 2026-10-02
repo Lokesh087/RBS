@@ -56,3 +56,42 @@ class TestAddOrderItem:
         assert item["quantity"] == 5  # merged
 
 
+class TestGetOrderItems:
+    def test_empty_order_returns_empty_list(self):
+        _, order_id = create_order()
+        items = get_order_items(order_id)
+        assert items == []
+
+    def test_items_have_line_total(self):
+        _, order_id = create_order()
+        add_order_item(order_id, 1, 3, 100.0)
+        items = get_order_items(order_id)
+        assert items[0]["line_total"] == 300.0
+
+    def test_multiple_items(self):
+        _, order_id = create_order()
+        add_order_item(order_id, 1, 2, 180.0)
+        add_order_item(order_id, 2, 1, 120.0)
+        items = get_order_items(order_id)
+        assert len(items) == 2
+
+
+class TestRemoveOrderItem:
+    def test_remove_item(self):
+        _, order_id = create_order()
+        add_order_item(order_id, 1, 2, 180.0)
+        items = get_order_items(order_id)
+        oi_id = items[0]["id"]
+        ok, msg = remove_order_item(oi_id)
+        assert ok
+        assert get_order_items(order_id) == []
+
+
+class TestDeleteOrder:
+    def test_delete_order(self):
+        _, order_id = create_order()
+        add_order_item(order_id, 1, 1, 100.0)
+        ok, _ = delete_order(order_id)
+        assert ok
+        items = get_order_items(order_id)
+        assert items == []

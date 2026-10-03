@@ -84,3 +84,24 @@ class TestValidBilling:
 
 # ── Bill Formatting ────────────────────────────────────────────────────────────
 
+class TestBillFormatting:
+    def _make_bill(self):
+        ok, order_id = create_order()
+        add_order_item(order_id, 1, 1, 180.0)
+        _, bill = calculate_bill(order_id)
+        return bill
+
+    def test_format_contains_total(self):
+        bill = self._make_bill()
+        text = format_bill_text(bill)
+        assert "TOTAL" in text
+
+    def test_format_contains_gst(self):
+        bill = self._make_bill()
+        text = format_bill_text(bill)
+        assert "GST" in text
+
+    def test_format_contains_restaurant_name(self):
+        bill = self._make_bill()
+        text = format_bill_text(bill, "TEST RESTAURANT")
+        assert "TEST RESTAURANT" in text
